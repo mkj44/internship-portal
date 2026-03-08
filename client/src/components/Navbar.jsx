@@ -1,68 +1,75 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiLogOut, FiBriefcase, FiUser } from 'react-icons/fi';
+import { LogOut, Briefcase, User as UserIcon, LayoutDashboard, Sparkles } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <nav className="glass-nav">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center gap-2">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
+            <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-300">
+                  <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-black bg-gradient-to-r from-blue-700 to-indigo-700 text-transparent bg-clip-text tracking-tight group-hover:from-blue-600 group-hover:to-indigo-500 transition-all duration-300">
                 SkillBridge
               </span>
             </Link>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-6">
             {user ? (
               <>
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 mr-4">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="hidden sm:inline-block truncate max-w-[150px]">{user.name}</span>
-                  <span className="hidden sm:inline-block px-2 py-1 text-xs rounded border border-slate-200 bg-slate-50 text-slate-500 capitalize">
-                      {user.role}
-                  </span>
+                <div className="hidden md:flex flex-col items-end mr-2">
+                    <span className="text-sm font-bold text-slate-800 leading-tight">{user.name}</span>
+                    <span className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">{user.role}</span>
                 </div>
+                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-lg border-2 border-white shadow-sm ring-2 ring-indigo-50 mr-4">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+
+                <div className="h-8 w-px bg-slate-200 mx-2 hidden md:block"></div>
+
                 {user.role === 'student' && (
                   <Link
                     to="/student-dashboard"
-                    className="text-slate-600 hover:text-blue-600 hover:bg-slate-50 px-3 py-2 rounded-md font-medium transition flex items-center gap-2"
+                    className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${isActive('/student-dashboard') ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-indigo-700 hover:bg-slate-50'}`}
                   >
-                   <FiUser /> Dashboard
+                   <LayoutDashboard className="w-4 h-4" /> <span className="hidden sm:inline">Dashboard</span>
                   </Link>
                 )}
                 {user.role === 'company' && (
                   <Link
                     to="/company-dashboard"
-                    className="text-slate-600 hover:text-blue-600 hover:bg-slate-50 px-3 py-2 rounded-md font-medium transition flex items-center gap-2"
+                    className={`px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 ${isActive('/company-dashboard') ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-indigo-700 hover:bg-slate-50'}`}
                   >
-                   <FiBriefcase /> Dashboard
+                   <Briefcase className="w-4 h-4" /> <span className="hidden sm:inline">Dashboard</span>
                   </Link>
                 )}
                 <button
                   onClick={handleLogout}
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700 px-3 py-2 rounded-md font-medium transition flex items-center gap-2"
+                  className="text-slate-500 hover:bg-red-50 hover:text-red-600 px-4 py-2 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 group"
                 >
-                  <FiLogOut /> <span className="hidden sm:inline">Logout</span>
+                  <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> <span className="hidden sm:inline">Logout</span>
                 </button>
               </>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="text-slate-600 hover:text-slate-900 font-medium transition"
+                  className="text-slate-600 hover:text-indigo-600 font-semibold transition-colors px-4 py-2"
                 >
                   Log in
                 </Link>
@@ -70,7 +77,7 @@ const Navbar = () => {
                   to="/register"
                   className="btn-primary"
                 >
-                  Sign up
+                  Get Started
                 </Link>
               </>
             )}

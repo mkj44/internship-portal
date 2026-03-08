@@ -2,126 +2,147 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { FiMapPin, FiClock, FiDollarSign, FiCheckCircle } from 'react-icons/fi';
+import { MapPin, Clock, DollarSign, Building2, AlignLeft, Send, Sparkles, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const InternshipDetails = () => {
   const { id } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const [internship, setInternship] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
-  const [message, setMessage] = useState('');
+  const [applyState, setApplyState] = useState({ loading: false, message: '', type: '' });
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchInternship = async () => {
       try {
         const { data } = await api.get(`/internships/${id}`);
         setInternship(data);
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching internship", error);
+        console.error("Error fetching internship details", error);
+      } finally {
         setLoading(false);
       }
     };
+
     fetchInternship();
   }, [id]);
 
   const handleApply = async () => {
-    setApplying(true);
-    setMessage('');
+    setApplyState({ loading: true, message: '', type: '' });
     try {
-      await api.post('/applications', { internshipId: id });
-      setMessage('Application submitted successfully!');
+      await api.post('/applications', { internshipId: id, coverLetter: "Standard application" });
+      setApplyState({ loading: false, message: 'Application submitted successfully!', type: 'success' });
     } catch (error) {
-       console.error("Error applying", error);
-       setMessage(error.response?.data?.message || 'Failed to apply. You may have already applied.');
-    } finally {
-      setApplying(false);
+      setApplyState({ 
+        loading: false, 
+        message: error.response?.data?.message || 'Failed to apply', 
+        type: 'error' 
+      });
     }
   };
 
-  const handleAnalyzeSkillGap = () => {
-    navigate(`/skill-gap/${id}`);
+  const handleAnalyzeGap = () => {
+      navigate(`/skill-gap/${id}`);
   };
 
   if (loading) {
-    return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+    return (
+        <div className="flex justify-center items-center h-64 text-indigo-600">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+    );
   }
 
   if (!internship) {
-    return <div className="text-center p-8 text-slate-500">Internship not found</div>;
+    return <div className="text-center p-8 mt-10 card">Internship not found.</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in">
-      <div className="card shadow-md">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 border-b pb-6">
-          <div>
-            <div className="text-sm font-bold tracking-wide text-indigo-600 uppercase mb-2">
-              {internship.company?.companyName}
-            </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">{internship.title}</h1>
+    <div className="max-w-4xl mx-auto animate-fade-in-up pb-20">
+      
+      <button 
+        onClick={() => navigate(-1)} 
+        className="mb-6 flex flex-row items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors group"
+      >
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Listings
+      </button>
+
+      <div className="card !p-0 overflow-hidden relative border-0 shadow-xl shadow-slate-200/50">
+        
+        {/* Header Banner */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 sm:p-12 relative overflow-hidden">
+            {/* Decorative background overlay */}
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiPjwvcmVjdD4KPHBhdGggZD0iTTAgMEw4IDhaTTAgOEw4IDBaIiBzdHJva2U9IiNmZmYiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+')] opacity-20"></div>
             
-            <div className="flex flex-wrap gap-4 text-sm font-medium text-slate-600">
-               <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-lg"><FiMapPin className="text-slate-500"/> {internship.location}</div>
-               <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-lg"><FiClock className="text-slate-500"/> {internship.duration}</div>
-               <div className="flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded-lg"><FiDollarSign className="text-slate-500"/> {internship.stipend}</div>
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 text-white">
+                <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold tracking-widest uppercase">
+                        <Building2 className="w-4 h-4 text-blue-200" /> {internship.company?.companyName || 'Verified Company'}
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-tight mb-4">{internship.title}</h1>
+                    
+                    <div className="flex flex-wrap items-center gap-6 text-indigo-100 font-medium">
+                        <div className="flex items-center gap-2"><MapPin className="w-5 h-5 text-indigo-200" /> {internship.location}</div>
+                        <div className="flex items-center gap-2"><Clock className="w-5 h-5 text-indigo-200" /> {internship.duration}</div>
+                        <div className="flex items-center gap-2"><DollarSign className="w-5 h-5 text-indigo-200" /> {internship.stipend}</div>
+                    </div>
+                </div>
             </div>
-          </div>
-          
-          {user?.role === 'student' && (
-            <div className="flex flex-col gap-3 min-w-[200px]">
-              <button 
-                onClick={handleApply} 
-                disabled={applying}
-                className="btn-primary w-full py-3 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-               {applying ? 'Applying...' : <><FiCheckCircle /> Apply Now</>}
-              </button>
-              <button 
-                onClick={handleAnalyzeSkillGap}
-                className="w-full py-3 bg-white border-2 border-indigo-600 text-indigo-700 font-bold rounded-lg hover:bg-indigo-50 transition"
-              >
-                Analyze Skill Gap
-              </button>
-            </div>
-          )}
         </div>
 
-        {message && (
-            <div className={`p-4 rounded-lg mb-8 font-medium ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                {message}
+        {/* Action Bar (Sticky on mobile, part of header on desktop ideally) */}
+        {user?.role === 'student' && (
+            <div className="bg-slate-50 border-b border-slate-200 p-4 sm:px-12 flex flex-col sm:flex-row gap-4 items-center justify-end">
+                {applyState.message && (
+                    <div className={`mr-auto text-sm font-bold flex items-center gap-2 px-4 py-2 rounded-lg ${applyState.type === 'success' ? 'text-emerald-700 bg-emerald-100' : 'text-red-600 bg-red-100'}`}>
+                        {applyState.type === 'error' && <AlertCircle className="w-4 h-4" />}
+                        {applyState.message}
+                    </div>
+                )}
+                
+                <button 
+                  onClick={handleAnalyzeGap}
+                  className="w-full sm:w-auto btn-secondary !py-3 flex items-center justify-center gap-2 group border-indigo-200 text-indigo-700 hover:text-indigo-800 hover:border-indigo-300 hover:bg-indigo-50"
+                >
+                  <Sparkles className="w-5 h-5 text-indigo-500 group-hover:scale-110 transition-transform" /> 
+                  Match My Skills
+                </button>
+                
+                <button 
+                  onClick={handleApply}
+                  disabled={applyState.loading || applyState.type === 'success'}
+                  className="w-full sm:w-auto btn-primary !py-3 flex items-center justify-center gap-2 shadow-indigo-500/30"
+                >
+                  {applyState.loading ? 'Submitting...' : applyState.type === 'success' ? 'Applied' : 'Apply Now'}
+                  {(!applyState.loading && applyState.type !== 'success') && <Send className="w-4 h-4" />}
+                </button>
             </div>
         )}
 
-        <div className="space-y-8">
-            <section>
-                <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                    <span className="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm">👔</span>
-                    About the Role
+        {/* Content Body */}
+        <div className="p-8 sm:p-12 space-y-10">
+            
+            <section className="prose prose-slate max-w-none">
+                <h3 className="flex items-center gap-3 text-2xl font-extrabold text-slate-900 mb-4 pb-2 border-b border-slate-100">
+                    <AlignLeft className="w-6 h-6 text-indigo-500" /> About the Role
                 </h3>
-                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">{internship.description}</p>
+                <p className="text-slate-600 leading-relaxed text-lg whitespace-pre-wrap">{internship.description}</p>
             </section>
 
             <section>
-                <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                     <span className="w-8 h-8 rounded bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm">🛠️</span>
-                    Requirements
+                <h3 className="flex items-center gap-3 text-2xl font-extrabold text-slate-900 mb-6 pb-2 border-b border-slate-100">
+                    <Sparkles className="w-6 h-6 text-indigo-500" /> Minimum Requirements
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                    {internship.requirements.map((req, index) => (
-                    <span key={index} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg border border-slate-200 font-medium">
+                <div className="flex flex-wrap gap-3">
+                    {internship.requirements.map((req, i) => (
+                    <div key={i} className="px-4 py-2.5 bg-slate-50 text-slate-700 font-bold rounded-xl border border-slate-200 shadow-sm flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
                         {req}
-                    </span>
+                    </div>
                     ))}
                 </div>
             </section>
 
-             <section className="bg-slate-50 p-6 rounded-xl border border-slate-200 mt-8">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">About {internship.company?.companyName}</h3>
-                <p className="text-slate-600">{internship.company?.companyDescription || 'No description provided.'}</p>
-            </section>
         </div>
       </div>
     </div>
